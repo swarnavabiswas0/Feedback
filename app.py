@@ -8,16 +8,19 @@ from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
-# --- Your core logic adapted to Streamlit ---
-
 st.title("Event Feedback Generator")
 
 num_students = st.number_input("Number of students", min_value=1, step=1)
 event_name = st.text_input("Event name")
 event_date_str = st.text_input("Date of event (DD-MM-YYYY)")
 
+# Initialize session_state keys if not present
+if "files_generated" not in st.session_state:
+    st.session_state.files_generated = False
+    st.session_state.excel_buffer = None
+    st.session_state.word_buffer = None
+
 if st.button("Generate Feedback Files"):
-    # Validate date
     try:
         event_date = datetime.datetime.strptime(event_date_str, "%d-%m-%Y")
     except:
@@ -62,7 +65,7 @@ if st.button("Generate Feedback Files"):
     # Prepare Excel in memory
     excel_buffer = BytesIO()
     df.to_excel(excel_buffer, index=False)
-    excel_buffer.seek(0)
+    excel_buffer.seek(0)  # Reset pointer
 
     # Prepare Word document in memory
     doc = Document()
@@ -98,9 +101,21 @@ if st.button("Generate Feedback Files"):
 
     word_buffer = BytesIO()
     doc.save(word_buffer)
-    word_buffer.seek(0)
+    word_buffer.seek(0)  # Reset pointer
 
-    # Show download buttons
+    # Save generated files in session_state to keep buttons visible after generation
+    st.session_state.files_generated = True
+    st.session_state.excel_buffer = excel_buffer
+    st.session_state.word_buffer = word_buffer
+
     st.success("Files generated successfully!")
-    st.download_button("Download Excel", data=excel_buffer, file_name=f"{event_name}_feedback.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    st.download_button("Download Word Document", data=word_buffer, file_name=f"{event_name}_feedback.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+# Show download buttons if files are generated
+if st.session_state.files_generated:
+    st.download_button("Download Excel", data=st.session_state.excel_buffer,
+                       file_name=f"{event_name}_feedback.xlsx",
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    st.download_button("Download Word Document", data=st.session_state.word_buffer,
+                       file_name=f"{event_name}_feedback.docx",
+                       mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
