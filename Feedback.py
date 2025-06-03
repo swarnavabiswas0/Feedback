@@ -78,8 +78,33 @@ if st.button("Generate Feedback Files"):
     for idx, question in enumerate(questions):
         ratings = df[question].tolist()
         plt.figure(figsize=(6, 4))
-        plt.hist(ratings, bins=[0.5,1.5,2.5,3.5,4.5,5.5], align='mid', rwidth=0.8,
-                 color=colors[idx % len(colors)], edgecolor='black')
+        
+        # Plot histogram and get counts and bins
+        counts, bins, patches = plt.hist(
+            ratings,
+            bins=[0.5,1.5,2.5,3.5,4.5,5.5],
+            align='mid',
+            rwidth=0.8,
+            color=colors[idx % len(colors)],
+            edgecolor='black'
+        )
+        
+        total_responses = sum(counts)
+        
+        # Annotate bars with percentage
+        for count, patch in zip(counts, patches):
+            if count > 0:
+                percentage = (count / total_responses) * 100
+                plt.text(
+                    patch.get_x() + patch.get_width() / 2,
+                    count,
+                    f'{percentage:.1f}%',
+                    ha='center',
+                    va='bottom',
+                    fontsize=9,
+                    fontweight='bold'
+                )
+        
         plt.xlabel("Rating (Likert Scale: 1 to 5)")
         plt.ylabel("Number of Responses")
         plt.title(question)
