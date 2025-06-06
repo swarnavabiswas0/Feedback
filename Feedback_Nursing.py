@@ -9,6 +9,15 @@ import os
 st.set_page_config(layout="wide")
 st.title("📊 Event Feedback Analysis Report Generator")
 
+# Full questions to appear in Word
+QUESTION_TEXTS = {
+    "1. Overall Rating": "Overall Rating: Please rate the overall quality of the event on a scale of 1 to 5 (1 being Poor, 5 being Excellent)",
+    "2. Objectives Met": "Event/Activity Objectives: Were the objectives of the event clearly communicated and met?",
+    "3. Event Organization": "How well was the event/activity organized?",
+    "4. Interaction and Engagement": "Interaction and Engagement",
+    "5. Logistics": "How would you rate the Logistics?"
+}
+
 HEADERS = ["Overall Rating", "Objectives", "Organization", "Interaction", "Logistics", "Comments"]
 
 # Upload file
@@ -76,7 +85,7 @@ if uploaded_file:
 
         def add_section(title, fig):
             doc.add_heading(title, level=1)
-            doc.add_paragraph(title.split(". ", 1)[1])
+            doc.add_paragraph(QUESTION_TEXTS[title])
             image_stream = BytesIO()
             fig.savefig(image_stream, format='png')
             image_stream.seek(0)
